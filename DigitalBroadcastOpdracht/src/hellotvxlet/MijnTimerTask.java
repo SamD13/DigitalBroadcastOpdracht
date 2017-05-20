@@ -13,12 +13,17 @@ import java.util.TimerTask;
  */
 public class MijnTimerTask extends TimerTask {
 MijnComponent mc;
+public boolean gestart=true;
+
     public MijnTimerTask(MijnComponent mc)
     {
         this.mc=mc;
     }
+    
     public void run() {
-        mc.tick();
+        if (gestart){
+          mc.tick();  
+        }
     }
 
   
