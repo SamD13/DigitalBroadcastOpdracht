@@ -8,6 +8,7 @@ package hellotvxlet;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
+import java.util.Random;
 import java.util.Timer;
 import org.bluray.ui.event.HRcEvent;
 import org.dvb.event.EventManager;
@@ -23,41 +24,59 @@ import org.havi.ui.HComponent;
 public class MijnComponent extends HComponent implements UserEventListener{
     
     int x,y,b,h;
+    
     Image schip;
     int schipx=350;
+    int schipy=250;
+    int schipWidth = 48;
+    int schipHeight = 45;
     
     Image achtergrond;
     int ay=0;
-    int schipy=250;
+    
+    Image enemy;
+    int enWidth = 80;
+    int enHeight = 77;
+    int enx=250;
+    int eny=200;
+    int enx1 = enx + 100, eny1 = eny  - 100;
+    
+    int score=0;
+    
     boolean up,down,left,right=false;
     
+    Random randomnr= new Random();
+    int willekeurig;
+    
+    Timer t = new Timer();
+    MijnTimerTask mtt = new MijnTimerTask(this);
+    
+    UserEventRepository repo= new UserEventRepository("repo");
+    
     public MijnComponent(int x, int y, int b, int h) 
-    { 
+    {
         this.x=x; this.y=y; this.b=b; this.h=h;
         this.setBounds(x,y,b,h);
         schip=this.getToolkit().getImage("spaceship.png");
         achtergrond=this.getToolkit().getImage("sterren.png");
+        enemy=this.getToolkit().getImage("enemy.png");
         MediaTracker mt=new MediaTracker(this);
-        mt.addImage(schip,1); mt.addImage(achtergrond, 2);
+        mt.addImage(schip,1); mt.addImage(achtergrond, 2); mt.addImage(enemy, 3);
         
         try{
             mt.waitForAll();
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
-        UserEventRepository repo= new UserEventRepository("repo");
+        
         repo.addAllArrowKeys();
+        repo.addKey(org.havi.ui.event.HRcEvent.VK_HOME);
+        repo.addKey(org.havi.ui.event.HRcEvent.VK_ESCAPE);
         
         EventManager man=EventManager.getInstance();
         
         man.addUserEventListener(this, repo);
-        
-        
-        
-        Timer t=new Timer();
-        MijnTimerTask mtt = new MijnTimerTask(this);
-        
-        t.scheduleAtFixedRate(mtt, 0, 50);
+               
     }
     
    
@@ -66,73 +85,111 @@ public class MijnComponent extends HComponent implements UserEventListener{
        g.drawImage(achtergrond, 0, ay, this);
        g.drawImage(achtergrond, 0, ay-570, this);
        g.drawImage(schip, schipx, schipy, this);
-       g.drawRect(200, 200, 5, 5);
+       g.drawImage(enemy, enx, eny, this);
+       g.drawImage(enemy, enx1, eny1, this);
+    }
+    
+    public int getScore(){
+        return score;
     }
     
     public void tick()
     {
+        willekeurig=randomnr.nextInt(40);
         
-        if (up)
-        {
-            schipy-=5;
-            right=false;
-            left=false;
-            down=false;
+        if(willekeurig < 10 ){
+             enx+=10;
+             eny1+=10;
         }
-        else if (down)
-        {
-            schipy+=5;
-            right=false;
-            left=false;
-            up=false;
+        if(willekeurig >= 10 && willekeurig < 20){
+             enx-=10;
+             enx1+=10;
         }
-        else if (left)
-        {
-            schipx-=5;
-            right=false;
-            down=false;
-            up=false;
+        if(willekeurig >= 20 && willekeurig < 30){
+             eny-=10;
+             enx1-=10;
         }
-        else if (right)
-        {
-            schipx+=5;
-            left=false;
-            down=false;
-            up=false;
+        if(willekeurig >= 30 && willekeurig <= 40){
+             eny+=10;
+             eny1-=10;
         }
-        
         System.out.println("Tick");
         ay=ay+1;
         this.repaint();
         if (ay>570) ay=0;
+        //enemy.;
         
-    }
+        if (eny < 0) {
+            eny += 50;
+        }
+        if (eny1 < 0) {
+            eny1 += 50;
+        }
+        if (enx < 0) {
+            enx += 50;
+        }
+        if (enx1 < 0) {
+            enx1 += 50;
+        }
+        if (eny + enHeight > getHeight()) {
+            eny -= 50;
+        }
+        if (eny1 + enHeight > getHeight()) {
+            eny1 -= 50;
+        }
+        if (enx + enWidth > getWidth()) {
+            enx -= 50;
+        }
+        if (enx1 + enWidth > getWidth()) {
+            enx1 -= 50;
+        }
+        if (schipy + schipHeight > getHeight() || schipx + schipWidth > getWidth() || schipx < 0 || schipy < 0) { 
+            mtt.gestart=false;
+          }
+        
+        score += 5;
+        System.out.println(score);
+     }
 
 
     public void userEventReceived(UserEvent e) {
+       
         
         if (e.getType() == HRcEvent.KEY_PRESSED){
           if (e.getCode()== HRcEvent.VK_LEFT)
-        {
-              left=true;
+          {
+            schipx-=10;
             this.repaint();
-        }  
+          }
           if (e.getCode() == HRcEvent.VK_RIGHT)
           {
-              right=true;
+            schipx+=10;
             this.repaint();
           }
           if (e.getCode() == HRcEvent.VK_DOWN)
           {
-              down=true;
+            schipy+=10;
             this.repaint();
           }
           if (e.getCode() == HRcEvent.VK_UP)
           {
-              up=true;
+            schipy-=10;
             this.repaint();
           }
           
+          
+          if (e.getCode() == HRcEvent.VK_HOME)
+          {
+            t.scheduleAtFixedRate(mtt, 0, 100);
+            mtt.gestart=true;
+          }
+           
+          if (e.getCode() == HRcEvent.VK_ESCAPE)
+          {
+            mtt.gestart=false;
+          }
+          
+                   
         }
         
         
