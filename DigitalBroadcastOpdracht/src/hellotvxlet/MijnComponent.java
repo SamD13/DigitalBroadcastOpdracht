@@ -5,6 +5,7 @@
 
 package hellotvxlet;
 
+
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -16,6 +17,7 @@ import org.dvb.event.UserEvent;
 import org.dvb.event.UserEventListener;
 import org.dvb.event.UserEventRepository;
 import org.havi.ui.HComponent;
+
 
 /**
  *
@@ -39,7 +41,8 @@ public class MijnComponent extends HComponent implements UserEventListener{
     int enHeight = 77;
     int enx=250;
     int eny=200;
-    int enx1 = enx + 100, eny1 = eny  - 100;
+    int enx1 = enx + 100;
+    int eny1 = eny  - 100;
     
     int score=0;
     
@@ -51,7 +54,9 @@ public class MijnComponent extends HComponent implements UserEventListener{
     Timer t = new Timer();
     MijnTimerTask mtt = new MijnTimerTask(this);
     
-    UserEventRepository repo= new UserEventRepository("repo");
+    UserEventRepository repo= new UserEventRepository("repo");    
+    
+    HelloTVXlet htvx;
     
     public MijnComponent(int x, int y, int b, int h) 
     {
@@ -75,8 +80,7 @@ public class MijnComponent extends HComponent implements UserEventListener{
         
         EventManager man=EventManager.getInstance();
         
-        man.addUserEventListener(this, repo);
-               
+        man.addUserEventListener(this, repo);              
     }
     
    
@@ -147,14 +151,29 @@ public class MijnComponent extends HComponent implements UserEventListener{
             mtt.gestart=false;
           }
         
+        if ((schipx > enx && schipx < (enx + enWidth)) || ((schipx + schipWidth) > enx && (schipx + schipWidth) < (enx + enWidth)))
+        {
+            if ((schipy > eny && schipy < (eny + enHeight)) || ((schipy + schipHeight) > eny && (schipy + schipHeight) < (eny + enHeight)))
+            {
+                mtt.gestart=false;
+            }
+        }
+         if ((schipx > enx1 && schipx < (enx1 + enWidth)) || ((schipx+schipWidth) > enx1 && (schipx+schipWidth) < (enx1 + enWidth)) )
+        {
+            if ((schipy > eny1 && schipy < (eny1 + enHeight)) || ((schipy + schipHeight) > eny1 && (schipy + schipHeight) < (eny1 + enHeight)))
+            {
+                mtt.gestart=false;
+            }
+        }
+        
         score += 5;
-        System.out.println(score);
+        System.out.println(score);     
+        
+    
      }
 
 
-    public void userEventReceived(UserEvent e) {
-       
-        
+    public void userEventReceived(UserEvent e) {       
         if (e.getType() == HRcEvent.KEY_PRESSED){
           if (e.getCode()== HRcEvent.VK_LEFT)
           {
@@ -176,8 +195,6 @@ public class MijnComponent extends HComponent implements UserEventListener{
             schipy-=10;
             this.repaint();
           }
-          
-          
           if (e.getCode() == HRcEvent.VK_HOME)
           {
             t.scheduleAtFixedRate(mtt, 0, 100);
@@ -187,12 +204,7 @@ public class MijnComponent extends HComponent implements UserEventListener{
           if (e.getCode() == HRcEvent.VK_ESCAPE)
           {
             mtt.gestart=false;
-          }
-          
-                   
+          }   
         }
-        
-        
-
     }
 }
